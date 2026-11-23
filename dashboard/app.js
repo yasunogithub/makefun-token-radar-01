@@ -225,9 +225,14 @@ function renderBoard(s) {
 
 function whyHtml(r) {
   const anchor = r.model.anchor_multiple;
+  const own = D.multiples.some((x) => x.category === (r.category || 'Uncategorized'));
+  const anchorPhrase = own
+    ? `the ${esc(r.category || 'Uncategorized')} anchor of ${fmtMult(anchor)}`
+    : `the global anchor of ${fmtMult(anchor)}, its own category having too few trading protocols to set one`;
+  const rankPhrase = r.rank === 1 ? 'ahead of the whole pre-token field' : `ahead of all but ${r.rank - 1} of the pre-token field`;
   const growth = r.change_7d === null ? 'no reported 7-day change' : `a ${r.change_7d > 0 ? '+' : ''}${r.change_7d.toFixed(1)}% week`;
   const bits = [
-    `${esc(r.name)} ranks #${r.rank} of ${D.counts.board} because ${fmtFull(r.tvl_usd)} of TVL, valued at the ${esc(r.category || 'Uncategorized')} anchor of ${fmtMult(anchor)}, outweighs all but ${r.rank - 1} of the pre-token field`,
+    `${esc(r.name)} ranks #${r.rank} of ${D.counts.board} because ${fmtFull(r.tvl_usd)} of TVL, valued at ${anchorPhrase}, puts it ${rankPhrase}`,
     `it has run ${fmtAge(r.age_days)} with no token recorded`,
     `across ${r.chains.length} chain${r.chains.length === 1 ? '' : 's'}`,
     `with ${growth}`,
@@ -242,9 +247,13 @@ function whyHtml(r) {
 
 function waterfallHtml(r) {
   const m = r.model;
+  const own = D.multiples.some((x) => x.category === (r.category || 'Uncategorized'));
+  const anchorLabel = own
+    ? `Category anchor — ${r.category || 'Uncategorized'} median Mcap/TVL`
+    : `Global anchor — median Mcap/TVL of all trading protocols (${r.category || 'Uncategorized'} sets none)`;
   const steps = [
     ['TVL in the snapshot', null, r.tvl_usd],
-    [`Category anchor — ${r.category || 'Uncategorized'} median Mcap/TVL`, m.anchor_multiple, r.tvl_usd * m.anchor_multiple],
+    [anchorLabel, m.anchor_multiple, r.tvl_usd * m.anchor_multiple],
     ['Growth — damped 7-day TVL momentum', m.growth_multiplier, r.tvl_usd * m.anchor_multiple * m.growth_multiplier],
     ['Maturity — time run with no token', m.maturity_multiplier, r.tvl_usd * m.anchor_multiple * m.growth_multiplier * m.maturity_multiplier],
     ['Breadth — chains it serves', m.breadth_multiplier, r.tvl_usd * m.anchor_multiple * m.growth_multiplier * m.maturity_multiplier * m.breadth_multiplier],
